@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Compute.Fluent;
-using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
@@ -21,10 +18,8 @@ using IoTHubExamples.Core;
 using Microsoft.Azure.Management.AppService.Fluent;
 using System.IO;
 using Microsoft.Azure.Management.CosmosDB.Fluent;
-using Microsoft.Azure.Management.CosmosDB.Fluent.Models;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Devices.Client;
 
 namespace DeviceSimulation

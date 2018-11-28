@@ -89,10 +89,6 @@
       "value": "[concat('Endpoint=',reference(resourceId('Microsoft.Devices/IoTHubs',parameters('iotHubName'))).eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=iothubowner;SharedAccessKey=',listKeys(resourceId('Microsoft.Devices/IotHubs',parameters('iotHubName')),variables('devices_provider_apiversion')).value[0].primaryKey)]",
       "type": "string"
     }
-    //"cosmosKeys": {
-    //  "type": "string",
-    //  "value": "[reference(variables('cosmosResourceId')).hostName]"
-    //}
 
   }
 }
