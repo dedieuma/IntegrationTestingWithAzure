@@ -1,0 +1,98 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "iotHubName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "cosmosApiType": {
+      "type": "string",
+      "allowedValues": [
+        "Cassandra",
+        "Gremlin",
+        "MongoDB",
+        "SQL",
+        "Table"
+      ],
+      "defaultValue": "SQL"
+    },
+    "cosmosName": {
+      "type": "string"
+    },
+    "accountStorageName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
+    "iotHubKeyName": "iothubowner",
+    "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
+    "storageAccountName": "[parameters('accountStorageName')]",
+    "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+    "cosmosOfferType": "Standard",
+    "cosmosResourceId": "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosName'))]",
+    "devices_provider_apiversion" :  "2016-02-03"
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-02-03",
+      "type": "Microsoft.Devices/IotHubs",
+      "name": "[parameters('iotHubName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard",
+        "capacity": 1
+      },
+      "properties": {
+        "location": "[parameters('location')]"
+      }
+    },
+
+    {
+      "apiVersion": "2015-04-08",
+      "kind": "GlobalDocumentDB",
+      "type": "Microsoft.DocumentDb/databaseAccounts",
+      "name": "[parameters('cosmosName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [
+          {
+            "id": "[concat(parameters('cosmosName'), '-', parameters('location'))]",
+            "failoverPriority": 0,
+            "locationName": "West Europe"
+          }
+        ],
+        "enableMultipleWriteLocations": false,
+        "isVirtualNetworkFilterEnabled": false,
+        "virtualNetworkRules": [],
+        "dependsOn": []
+      },
+      "tags": {
+        "defaultExperience": "DocumentDB"
+      }
+    }
+
+
+  ],
+  "outputs": {
+    "hubKeys": {
+      "value": "[concat('HostName=', reference(variables('iotHubResourceId')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listKeys(variables('iotHubKeyResource'), '2017-07-01').primaryKey)]",
+      "type": "string"
+    },
+    "EventHubEndPoint": {
+      "value": "[concat('Endpoint=',reference(resourceId('Microsoft.Devices/IoTHubs',parameters('iotHubName'))).eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=iothubowner;SharedAccessKey=',listKeys(resourceId('Microsoft.Devices/IotHubs',parameters('iotHubName')),variables('devices_provider_apiversion')).value[0].primaryKey)]",
+      "type": "string"
+    }
+    //"cosmosKeys": {
+    //  "type": "string",
+    //  "value": "[reference(variables('cosmosResourceId')).hostName]"
+    //}
+
+  }
+}

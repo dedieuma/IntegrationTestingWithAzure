@@ -1,0 +1,15 @@
+﻿{
+  "credentials": {
+    "subscription": "<YOUR-SUBSCRIPTION-ID-HERE>",
+    "client": "<YOUR-APPLICATION-ID-HERE>",
+    "key": "<YOUR-KEY-PASS-HERE>",
+    "tenant": "<YOUR-TENANT-ID-HERE>"
+  },
+  "rgName": "<YOUR-NAME-OF-THE-RESOURCE-GROUP>",
+  "deploymentName": "<YOUR-NAME-OF-THE-DEPLOYMENT>",
+  "accountStorageName": "<YOUR-ACCOUNT-STORAGE-NAME>",
+  "cosmosDBName": "<YOUR-COSMOS-DB-NAME>",
+  "iotHubName": "<YOUR-IOT-HUB-NAME>",
+  "functionAppNamePrefix":  "<YOUR-PREFIX-FOR-NAMING-FUNCTION-APP>"
+
+}
