@@ -21,6 +21,7 @@ using Microsoft.Azure.Management.CosmosDB.Fluent;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.Azure.Devices.Client;
+using System.Threading;
 
 namespace DeviceSimulation
 {
@@ -51,6 +52,7 @@ namespace DeviceSimulation
         {
             Console.WriteLine("Beginning... Press Any Key");
             Console.ReadLine();
+            spin = new Spinner();
 
             if (!InitializeVariables())
                 return;
@@ -58,9 +60,9 @@ namespace DeviceSimulation
             DeployTemplate();
 
             CreateCosmosDB();
-            //CreateFunctionApp();
-            //CreateDevice(1);
-            //SendDataToDevices();
+            CreateFunctionApp();
+            CreateDevice(1);
+            SendDataToDevices();
             Console.WriteLine("Done Main");
             Console.ReadLine();
 
@@ -71,6 +73,8 @@ namespace DeviceSimulation
 
         private static bool InitializeVariables(string pathToParameters = "..\\..\\deviceSimulationParameters.json")
         {
+            spin.setMessage("Initilize variables...");
+            spin.Start();
             dynamic parameters = JObject.Parse(File.ReadAllText(pathToParameters));
             try
             {
@@ -101,6 +105,7 @@ namespace DeviceSimulation
             location = Region.EuropeWest;
             WriteVariableIntoFiles();
 
+            spin.Stop();
             
             return true;
 
@@ -184,26 +189,26 @@ namespace DeviceSimulation
 
         private static void InitializeResources()
         {
-            AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromFile("../../azureauth.properties");
-
-            azure = Azure.Configure().WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic).Authenticate(credentials).WithDefaultSubscription();
-            spin = new Spinner();
-
-
+            Console.WriteLine("Initialize Resources...");
             // Getting the Azure AD application credentials
-            //AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromFile("../../azureauth.properties");
-
+            AzureCredentials credentials = SdkContext.AzureCredentialsFactory.FromFile("../../azureauth.properties");
             // Logging to my Azure AD
-            //azure = Azure.Configure().WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic).Authenticate(credentials).WithDefaultSubscription();
+            azure = Azure.Configure().WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic).Authenticate(credentials).WithDefaultSubscription();
+
 
             // Creating a new ResourceGroup with the name of rgName
+            spin.setMessage("Creating a resource Group...");
+            spin.Start();
             var resourceGroup = azure.ResourceGroups.Define(rgName).WithRegion(location).Create();
-
-
+            spin.Stop();
             Console.WriteLine($"Resource Group {rgName} created");
+
             // Creating the storage linked to the resource Group
+            spin.setMessage($"Creating the storage {accountStorageName}...");
+            spin.Start();
             var storage = azure.StorageAccounts.Define(accountStorageName).WithRegion(location).WithExistingResourceGroup(resourceGroup).Create();
-            Console.WriteLine($"Storage {accountStorageName} created");
+            
+           
             var storageKeys = storage.GetKeys();
             string storageConnectionString = "DefaultEndpointsProtocol=https;"
                 + "AccountName=" + storage.Name
@@ -216,36 +221,37 @@ namespace DeviceSimulation
 
 
             // Creating our container
-            Console.WriteLine("Creating container...");
+            //Console.WriteLine("Creating container...");
             CloudBlobContainer container = serviceClient.GetContainerReference("templates");
             container.CreateIfNotExistsAsync().GetAwaiter().GetResult();
             BlobContainerPermissions containerPermissions = new BlobContainerPermissions() { PublicAccess = BlobContainerPublicAccessType.Container };
             container.SetPermissionsAsync(containerPermissions).GetAwaiter().GetResult();
-            //spin.Stop();
+
+            Console.WriteLine($"Storage {accountStorageName} created");
+            spin.Stop();
+
 
 
 
             //Uploading to the container our template file
-            //spin.setMessage("Uploading template file...");
-            //spin.Start();
-            Console.WriteLine("Uploading template file...");
+            spin.setMessage("Uploading template file...");
+            spin.Start();
             CloudBlockBlob templateBlob = container.GetBlockBlobReference("template.json");
             templateBlob.UploadFromFileAsync("..\\..\\Templates\\template.json").GetAwaiter().GetResult();
 
-            //spin.Stop();
             //uploading to the container our parameter file
-            //spin.setMessage("Uploading parameter file...");
-            //spin.Start();
             Console.WriteLine("Uploading parameter file...");
             CloudBlockBlob paramBlob = container.GetBlockBlobReference("parameters.json");
             paramBlob.UploadFromFileAsync("..\\..\\Templates\\parameters.json").GetAwaiter().GetResult();
+            spin.Stop();
 
 
         }
 
         private static void DeployTemplate()
         {
-            Console.WriteLine("Deploying Template...");
+            spin.setMessage("Deploying Template...");
+            spin.Start();
             // string templatePath = "https://" + acccountStorageName + ".blob.core.windows.net/templates/templateIotHub.json";
             // string paramPath = "https://" + acccountStorageName + ".blob.core.windows.net/templates/parameters.json";
             // var deployment = azure.Deployments.Define("Deployment_01")
@@ -290,7 +296,7 @@ namespace DeviceSimulation
                     }
                 }
             });
-
+            spin.Stop();
             string state = createResponse.Properties.ProvisioningState;
             Console.WriteLine("Deployment state: {0}", state);
 
@@ -377,8 +383,8 @@ namespace DeviceSimulation
 
         private static void CreateCosmosDB()
         {
-
-            Console.WriteLine("Creating a Cosmos DB...");
+            spin.setMessage("Creating a Cosmos DB...");
+            spin.Start();
             //ICosmosDBAccount cosmosDBAccount = await azure.CosmosDBAccounts.Define(cosmosDBName)
             //                                   .WithRegion(Region.EuropeWest)
             //                                   .WithExistingResourceGroup(rgName)
@@ -388,9 +394,12 @@ namespace DeviceSimulation
             //                                   .WithReadReplication(Region.EuropeWest)
             //                                   .CreateAsync();
             ICosmosDBAccount cosmosDBAccount = azure.CosmosDBAccounts.GetByResourceGroup(rgName, cosmosDBName);
+            spin.Stop();
 
             Console.WriteLine("CosmosDB Successfully created : " + cosmosDBAccount.Name);
-            Console.WriteLine("Getting credentials for CosmosDB...");
+            spin.setMessage("Getting credentials for CosmosDB...");
+            spin.Start();
+
 
             var databaseAccountListKeysResult = cosmosDBAccount.ListKeys();
             string masterKey = databaseAccountListKeysResult.PrimaryMasterKey;
@@ -408,6 +417,7 @@ namespace DeviceSimulation
             //+ databaseAccountListConnectionStringsResult.ConnectionStrings[0].ConnectionString);
 
             //string primaryConnectionString = databaseAccountListConnectionStringsResult.ConnectionStrings[0].ConnectionString;
+            spin.Stop();
             Console.WriteLine($"CosmosDb {cosmosDBName} with the connection string {primaryConnectionString}");
             //string url = "dedieumadocdb458.documents.azure.com";
             //string[] splitted = primaryConnectionString.Split(new string[] { url }, StringSplitOptions.None);
@@ -434,7 +444,8 @@ namespace DeviceSimulation
             string appName = SdkContext.RandomResourceName(functionAppPrefix, 20);
             string suffix = ".azurewebsites.net";
             string appUrl = appName + suffix;
-            Console.WriteLine("Creating function app " + appName + " in resource group " + rgName + "...");
+            spin.setMessage("Creating function app " + appName + " in resource group " + rgName + "...");
+            //Console.WriteLine("Creating function app " + appName + " in resource group " + rgName + "...");
             //Console.ReadLine();
 
             IFunctionApp app1 = azure.AppServices.FunctionApps.Define(appName)
@@ -442,14 +453,14 @@ namespace DeviceSimulation
                                 .WithExistingResourceGroup(rgName)
                                 .Create();
 
-
+            spin.Stop();
             Console.WriteLine("Created Function App");
             Console.WriteLine(app1);
-            app1.Deploy();
-            // Deploy
+
 
             Console.WriteLine("");
-            Console.WriteLine("Deploying to function app" + appName + " with FTP...");
+            spin.setMessage("Deploying to function app" + appName + " with FTP...";
+            spin.Start();
 
             IPublishingProfile profile = app1.GetPublishingProfile();
             Utilities.UploadFileToFunctionApp(profile, Path.Combine(Utilities.ProjectPath, "FunctionAppCore", "host.json"));
@@ -457,6 +468,7 @@ namespace DeviceSimulation
             Utilities.UploadFileToFunctionApp(profile, Path.Combine(Utilities.ProjectPath, "FunctionAppCore", "IoTHubTrigger", "run.csx"), "IoTHubTrigger/run.csx");
             //sync triggers
             app1.SyncTriggers();
+            spin.Stop();
 
 
             Console.WriteLine("Deployment iotHubTrigger to web app" + app1.Name + " completed");

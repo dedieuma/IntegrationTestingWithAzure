@@ -7,40 +7,66 @@ using System.Threading.Tasks;
 
 namespace DeviceSimulation
 {
-    public class Spinner
+    public class Spinner : IDisposable
     {
 
-        static string[] sequence = null;
+        private const string Sequence = @"/-\|";
+        private int counter = 0;
+        private readonly int delay;
+        private bool active;
+        private readonly Thread thread;
+        private string message;
 
-        public int Delay { get; set; } = 300;
-
-
-        int counter;
-
-        public Spinner()
+        public Spinner(int delay = 100)
         {
-            counter = 0;
-            sequence = new string[] {
-             "\\", "|", "/", "-"
-        };
-
+            this.delay = delay;
+            thread = new Thread(Spin);
         }
 
-
-        public void Turn(string displayMsg = "")
+        public void Start()
         {
-            counter++;
+            Console.Write(message);
+            active = true;
+            if (!thread.IsAlive)
+                thread.Start();
+        }
 
-            Thread.Sleep(Delay);
+        public void Stop()
+        {
+            active = false;
+            Draw(' ');
+        }
 
-            int counterValue = counter % 4;
+        private void Spin()
+        {
+            while (active)
+            {
+                Turn();
+                Thread.Sleep(delay);
+            }
+        }
 
-            string fullMessage = displayMsg + sequence[counterValue];
-            int msglength = fullMessage.Length;
+        private void Draw(char c)
+        {
+            Console.Write(c);
+            Console.SetCursorPosition(Console.CursorLeft-1, Console.CursorTop);
+            
+        }
 
-            Console.Write(fullMessage);
+        private void Turn()
+        {
+            
+            Draw(Sequence[++counter % Sequence.Length]);
+        }
 
-            Console.SetCursorPosition(Console.CursorLeft - msglength, Console.CursorTop);
+        public void Dispose()
+        {
+            Stop();
+        }
+
+        public void setMessage(string message)
+        {
+            this.message = message;
         }
     }
 }

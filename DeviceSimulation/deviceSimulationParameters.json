@@ -1,15 +1,15 @@
 ﻿{
   "credentials": {
-    "subscription": "<YOUR-SUBSCRIPTION-ID-HERE>",
-    "client": "<YOUR-APPLICATION-ID-HERE>",
-    "key": "<YOUR-KEY-PASS-HERE>",
-    "tenant": "<YOUR-TENANT-ID-HERE>"
+    "subscription": "19379488-8305-44e0-a5ce-304293af6984",
+    "client": "a442ffd9-b64e-4a63-b631-cf56ccb1398f",
+    "key": "iothubplaypass",
+    "tenant": "f29766a0-4ccc-46f3-a7e9-b95857693b73"
   },
-  "rgName": "<YOUR-NAME-OF-THE-RESOURCE-GROUP>",
-  "deploymentName": "<YOUR-NAME-OF-THE-DEPLOYMENT>",
-  "accountStorageName": "<YOUR-ACCOUNT-STORAGE-NAME>",
-  "cosmosDBName": "<YOUR-COSMOS-DB-NAME>",
-  "iotHubName": "<YOUR-IOT-HUB-NAME>",
-  "functionAppNamePrefix":  "<YOUR-PREFIX-FOR-NAMING-FUNCTION-APP>"
+  "rgName": "iotRgV2",
+  "deploymentName": "Deployment_01",
+  "accountStorageName": "dedieumaAccountStorage0587",
+  "cosmosDBName": "dedieumaCosmosDB584",
+  "iotHubName": "dedieumaIoTHub",
+  "functionAppNamePrefix":  "dedieumaFA"
 
 }

@@ -3,14 +3,13 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "iotHubName": {
-      "value": ""
+      "value": "dedieumaIoTHub"
     },
-
     "cosmosName": {
-      "value": ""
+      "value": "dedieumaCosmosDB584"
     },
     "accountStorageName": {
-      "value": "" 
+      "value": "dedieumaAccountStorage0587"
     }
   }
 }
