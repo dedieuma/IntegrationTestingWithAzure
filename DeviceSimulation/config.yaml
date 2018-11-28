@@ -1,0 +1,9 @@
+AzureIoTHubConfig:
+  IoTHubUri: 
+  IoTHubD2CEndpoint: messages/events
+  ConnectionString: 
+DeviceConfigs:
+- Nickname: 
+  DeviceId: 
+  Key: 
+  Status: Enabled
