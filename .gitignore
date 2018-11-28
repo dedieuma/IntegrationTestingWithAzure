@@ -262,3 +262,6 @@ __pycache__/
 
 
 **/DeviceSimulation/SavedParameters
+DeviceSimulation/SavedParameters/*
+DeviceSimulation/SavedParameters/**
+DeviceSimulation/SavedParameters
