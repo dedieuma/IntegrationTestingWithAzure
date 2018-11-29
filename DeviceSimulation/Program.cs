@@ -21,57 +21,89 @@ using Microsoft.Azure.Management.CosmosDB.Fluent;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.Azure.Devices.Client;
-using System.Threading;
 
 namespace DeviceSimulation
 {
-    class Program
+    public class Program
     {
+        //https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-rm-template
+        //https://azure.microsoft.com/fr-fr/resources/samples/resource-manager-dotnet-resources-and-groups/
+        //https://stackoverflow.com/questions/31684821/how-to-add-application-to-azure-ad-programmatically
+        //https://docs.microsoft.com/en-us/azure/virtual-machines/windows/csharp-template
+        //https://docs.microsoft.com/en-us/azure/iot-dps/quick-setup-auto-provision-rm
+        //https://github.com/Microsoft/iot-samples/tree/master/DeviceManagement/csharp
         //https://github.com/Azure/azure-libraries-for-net
         //https://github.com/Azure-Samples/cosmosdb-dotnet-create-documentdb-and-get-mongodb-connection-string/blob/master/Program.cs
         //https://github.com/Azure-Samples/app-service-dotnet-configure-deployment-sources-for-functions
+
+        // Resource Group Name
         static string rgName = "";
+        // Name of the deployment with the template
         static string deploymentName = "";
+        // Location. West Europe Used
         static Region location = null;
+        // Azure AD Application ID
         static string applicationId = "";
+        // Azure Subscription ID
         static string subscriptionId = "";
-        public static string tenantId = "";
+        // Azure AD Tenant ID
+        static string tenantId = "";
+        // Azure AD Password 
         static string password = "";
-        static string cosmosDBName = "";
+        // Name of the cosmos DB
+        public static string cosmosDBName = "";
+        // Name of the IOT Hub
         static string iotHubName = "";
+        // Url endpoint to cosmos DB
+        public static string endPointCosmosDB = "";
+        // Key access to cosmos DB
+        public static string accountKeyCosmosDB = "";
+        // Prefix of the function app
         static string functionAppPrefix = ""; 
         static RegistryManager _registryManager;
+        // Connection stirng to the iot hub
         static string iotHubConnectionString;
+        // Azure Manager object
         static IAzure azure;
+        // SPIN TO WIN
         static Spinner spin;
-
+        // List of the iot devices
+        public static List<DeviceConfig> deviceConfigs;
         //Name of the storage account
         static string accountStorageName = "";
 
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Beginning... Press Any Key");
-            Console.ReadLine();
-            spin = new Spinner();
+        //static void Main(string[] args)
+        //{
+        //    Console.WriteLine("Beginning... Press Any Key");
+        //    Console.ReadLine();
+        //    spin = new Spinner();
 
-            if (!InitializeVariables())
-                return;
-            InitializeResources();
-            DeployTemplate();
+        //    if (!InitializeVariables())
+        //        return;
+        //    InitializeResources();
+        //    DeployTemplate();
 
-            CreateCosmosDB();
-            CreateFunctionApp();
-            CreateDevice(1);
-            SendDataToDevices();
-            Console.WriteLine("Done Main");
-            Console.ReadLine();
+        //    CreateCosmosDB();
+        //    CreateFunctionApp();
+        //    CreateDevice(1);
+        //    SendDataToDevices();
+        //    Console.WriteLine("Done Main");
+        //    Console.ReadLine();
+        //    Console.WriteLine("Deleting Resource Group...");
+        //    Console.ReadLine();
+        //    DeleteResourceGroup();
+
+        //}
 
 
-
-
-        }
-
-        private static bool InitializeVariables(string pathToParameters = "..\\..\\deviceSimulationParameters.json")
+        /// <summary>
+        /// Initialize the program variables with the parameters from the file path from the parameter pathToParameters.
+        /// Default file : deviceSimulationParameters.json
+        /// Write some variables into other specific files.
+        /// </summary>
+        /// <param name="pathToParameters">The path to the json file containing the variable data</param>
+        /// <returns>true if succeed, false if the parameters from the json file are invalid</returns>
+        public static bool InitializeVariables(string pathToParameters = "..\\..\\deviceSimulationParameters.json")
         {
             spin.setMessage("Initilize variables...");
             spin.Start();
@@ -111,6 +143,11 @@ namespace DeviceSimulation
 
         }
 
+        /// <summary>
+        /// Write the variables into specific files :
+        /// azureauth.properties : useful to authentificate our IAzure object
+        /// parameters.json : useful for the template deployment
+        /// </summary>
         private static void WriteVariableIntoFiles()
         {
 
@@ -141,6 +178,10 @@ namespace DeviceSimulation
         }
 
         //TODO : enhance this method
+        /// <summary>
+        /// check if the parameters are valid, aka they are not empty or null and they don't begin with a <
+        /// </summary>
+        /// <param name="parameters">the json dynamic object from deviceSimulationParameters.json</param>
         private static void ParametersInvalid(dynamic parameters)
         {
 
@@ -187,7 +228,11 @@ namespace DeviceSimulation
 
         }
 
-        private static void InitializeResources()
+        /// <summary>
+        /// Initialize Resources on Azure. Create a resource group, a storage, a container inside the storage, 
+        /// and update template.json and parameter.json onto it. They will be used for deployment.
+        /// </summary>
+        public static void InitializeResources()
         {
             Console.WriteLine("Initialize Resources...");
             // Getting the Azure AD application credentials
@@ -248,7 +293,10 @@ namespace DeviceSimulation
 
         }
 
-        private static void DeployTemplate()
+        /// <summary>
+        /// Deploy the template from the template file template.json. Write the keys returned by the deployment into files
+        /// </summary>
+        public static void DeployTemplate()
         {
             spin.setMessage("Deploying Template...");
             spin.Start();
@@ -310,6 +358,12 @@ namespace DeviceSimulation
             //Console.ReadLine();
         }
 
+        /// <summary>
+        /// write the keys from the deployed template into some files.
+        /// function.json : useful for indicating the triggering of the function app. Writes the key to the event hub linked to the iot hub
+        /// config.yaml : write the connection string of the iot hub, for connecting freshly created devices
+        /// </summary>
+        /// <param name="outputs">the outputs from the deployment template</param>
         private static void WriteKeysIntoFiles(object outputs)
         {
             dynamic jsonOutputs = JObject.Parse(outputs.ToString());
@@ -338,8 +392,10 @@ namespace DeviceSimulation
 
         }
 
-
-        private static void SendDataToDevices()
+        /// <summary>
+        /// Send a Message to each of the devices created into config.yaml
+        /// </summary>
+        public static void SendDataToDevices()
         {
             const string configFilePath = @"../../config.yaml";
             IoTHubExamples.Core.Configuration config = configFilePath.GetIoTConfiguration();
@@ -381,7 +437,11 @@ namespace DeviceSimulation
 
         }
 
-        private static void CreateCosmosDB()
+        /// <summary>
+        /// get the freshly created cosmosDB from azure. The template deployment deployed the cosmos.
+        /// Get the connection string to the cosmos and write into function.json, for the output of the function app
+        /// </summary>
+        public static void CreateCosmosDB()
         {
             spin.setMessage("Creating a Cosmos DB...");
             spin.Start();
@@ -409,7 +469,8 @@ namespace DeviceSimulation
                                              + ";AccountKey="
                                              + masterKey
                                              + ";";
-            //mongodb://dedieumadocdb458:1A6qwNUSsKS3Yk4Ste19DAYL6MZa17szLzyIFOg3jm08bTaI4lzqqN0LJtgVp0qyMAyzTYP8UJGzFzEXPaIZLw==@dedieumadocdb458.documents.azure.com:10255/?ssl=true
+            endPointCosmosDB = endPoint;
+            accountKeyCosmosDB = masterKey;
 
             //Console.WriteLine("Get the MongoDB connection string");
             //var databaseAccountListConnectionStringsResult = cosmosDBAccount.ListConnectionStrings();
@@ -419,13 +480,7 @@ namespace DeviceSimulation
             //string primaryConnectionString = databaseAccountListConnectionStringsResult.ConnectionStrings[0].ConnectionString;
             spin.Stop();
             Console.WriteLine($"CosmosDb {cosmosDBName} with the connection string {primaryConnectionString}");
-            //string url = "dedieumadocdb458.documents.azure.com";
-            //string[] splitted = primaryConnectionString.Split(new string[] { url }, StringSplitOptions.None);
-            //string port = splitted[splitted.Length - 1].Substring(0, splitted[splitted.Length - 1].IndexOf('/'));
-            //port = port.TrimStart(new char[] { ':' });
-            //splitted = splitted[0].Split(':');
-            //string primaryKey = splitted[splitted.Length - 1].TrimEnd(new char[] { '@' });
-            //Console.WriteLine($"url : {url} port : {port} primaryKey : {primaryKey}");
+
 
             dynamic jsonFunction = JObject.Parse(File.ReadAllText("..\\..\\FunctionAppCore\\IoTHubTrigger\\function.json"));
             dynamic bindings = jsonFunction["bindings"];
@@ -439,7 +494,11 @@ namespace DeviceSimulation
 
         }
 
-        private static void CreateFunctionApp()
+        /// <summary>
+        /// Create a function app, upload the files for his running state. The files are run.csx, function.json and host.json
+        /// DO NOT WORK ATM : the inputs / outputs of the function app does not works.
+        /// </summary>
+        public static void CreateFunctionApp()
         {
             string appName = SdkContext.RandomResourceName(functionAppPrefix, 20);
             string suffix = ".azurewebsites.net";
@@ -459,7 +518,7 @@ namespace DeviceSimulation
 
 
             Console.WriteLine("");
-            spin.setMessage("Deploying to function app" + appName + " with FTP...";
+            spin.setMessage("Deploying to function app" + appName + " with FTP...");
             spin.Start();
 
             IPublishingProfile profile = app1.GetPublishingProfile();
@@ -482,16 +541,20 @@ namespace DeviceSimulation
 
         }
 
-        private static void CreateDevice(int numberOfDevices)
+        /// <summary>
+        /// Create numberOfDevices devices linked to the iot hub
+        /// </summary>
+        /// <param name="numberOfDevices">the number of devices to create</param>
+        public static void CreateDevice(int numberOfDevices)
         {
             const string configFilePath = @"../../config.yaml";
             IoTHubExamples.Core.Configuration config = configFilePath.GetIoTConfiguration();
-            List<DeviceConfig> testDevices = config.DeviceConfigs;
+            deviceConfigs = config.DeviceConfigs;
             AzureIoTHubConfig azureConfig = config.AzureIoTHubConfig;
 
             _registryManager = RegistryManager.CreateFromConnectionString(azureConfig.ConnectionString);
 
-            testDevices = config.DeviceConfigs = new System.Collections.Generic.List<DeviceConfig>();
+            deviceConfigs = config.DeviceConfigs = new System.Collections.Generic.List<DeviceConfig>();
 
             for (int deviceNumber = 0; deviceNumber < numberOfDevices; deviceNumber++)
             {
@@ -501,7 +564,7 @@ namespace DeviceSimulation
                     Nickname = $"{"test"}{deviceNumber:0000}",
                     Status = "Enabled"
                 };
-                testDevices.Add(testDevice);
+                deviceConfigs.Add(testDevice);
 
                 Task<string> task = AddDeviceAsync(testDevice);
                 task.Wait();
@@ -511,7 +574,7 @@ namespace DeviceSimulation
 
             if (configFilePath.UpdateIoTConfiguration(config).Item1)
             {
-                foreach (var testDevice in testDevices)
+                foreach (var testDevice in deviceConfigs)
                 {
                     Console.WriteLine(
                         $"DeviceId: {testDevice.DeviceId} has DeviceKey: {testDevice.Key} \r\nConfig file: {configFilePath} has been updated accordingly.");
@@ -520,6 +583,12 @@ namespace DeviceSimulation
 
         }
 
+
+        /// <summary>
+        /// Add the device to the registry manager
+        /// </summary>
+        /// <param name="deviceConfig">the device to add</param>
+        /// <returns></returns>
         private static async Task<string> AddDeviceAsync(DeviceConfig deviceConfig)
         {
             Device device;
@@ -547,11 +616,17 @@ namespace DeviceSimulation
             return device.Authentication.SymmetricKey.PrimaryKey;
         }
 
-        
 
-        
+        /// <summary>
+        /// Deletes the resource group, and all the resources inside
+        /// </summary>
+        public static void DeleteResourceGroup()
+        {
+            azure.ResourceGroups.DeleteByName(rgName);
+            spin.Dispose();
+        }
 
 
-     
+
     }
 }
