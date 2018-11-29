@@ -7,6 +7,14 @@ It creates a new Azure resource Group, deploys some resource, make tests about a
 The idea was to quickly create resources on Azure, spy the entries/outputs of the resources to see if the messages are well formed as intended, and delete this environment. 
 It could be included in the end inside a Azure DevOps pipeline, as a no backwards step gate.
 
+## Prerequisites
+
+Please follow the instruction at the first part of this page, "Prepare your Visual Studio Project" :
+https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-rm-template
+It allows you to create a new Azure AD Application, and gives you the credentials. 
+
+This credentials are needed inside the DeviceSimulation/deviceSimulationParameters.json. With those, you need to write the name of the future resource group, the name of the deployment, the name of the storage account, the name of the cosmosDB, the name of the iot hub, and the prefix of your Function App. Careful, some of them must be unique on Azure, you should gives some prefixes like your nickname.
+
 ## Pipeline
 
 ```sequence
