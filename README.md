@@ -33,14 +33,23 @@ I'm using an hybrid mix between Azure ARM (for deploying IoT Hub and CosmosDB) a
 Not Exhaustive
 
 https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-rm-template
+
 https://azure.microsoft.com/fr-fr/resources/samples/resource-manager-dotnet-resources-and-groups/
+
 https://stackoverflow.com/questions/31684821/how-to-add-application-to-azure-ad-programmatically
+
 https://docs.microsoft.com/en-us/azure/virtual-machines/windows/csharp-template
+
 https://docs.microsoft.com/en-us/azure/iot-dps/quick-setup-auto-provision-rm
+
 https://github.com/Microsoft/iot-samples/tree/master/DeviceManagement/csharp
+
 https://github.com/Azure/azure-libraries-for-net
+
 https://github.com/Azure-Samples/cosmosdb-dotnet-create-documentdb-and-get-mongodb-connection-string/blob/master/Program.cs
+
 https://github.com/Azure-Samples/app-service-dotnet-configure-deployment-sources-for-functions
+
 
 ### TODO And Known Bugs
 
